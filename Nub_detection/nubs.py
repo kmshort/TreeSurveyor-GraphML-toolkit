@@ -1,14 +1,15 @@
 import networkx as nx
 import argparse
-import tree_routines_X3 as tR
 import csv
+import tree_routines_X3 as tR
+
 
 def main():
-'''
-A rough tool for detecting tips that are internally located. Basically, it checks its neighbour, and sees how many derivatives there are.. if it's a lot, then chances are it's an internal tip.
-This will export a csv file, with a list of Tree Surveyor BranchIDs. Next to it, a number of derivatives.
-Use this with Tree Surveyor's "Skeleton Curation", enable "Corrected segment data" visualisation. Hit the "HOME" key, and enter in the BranchIDs with lots of derivatives. Then, manually curate the tip.
-'''
+    '''
+    A rough tool for detecting tips that are internally located. Basically, it checks its neighbour, and sees how many derivatives there are.. if it's a lot, then chances are it's an internal tip.
+    This will export a csv file, with a list of Tree Surveyor BranchIDs. Next to it, a number of derivatives.
+    Use this with Tree Surveyor's "Skeleton Curation", enable "Corrected segment data" visualisation. Hit the "HOME" key, and enter in the BranchIDs with lots of derivatives. Then, manually curate the tip.
+    '''
 
     parser = argparse.ArgumentParser(prog='TipSeg', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('graph_file')
