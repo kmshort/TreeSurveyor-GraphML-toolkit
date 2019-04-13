@@ -7,9 +7,10 @@ from shutil import copyfile
 #directory = "."
 directory = os.getcwd()
 fileFound = False
-rename_level = 3
 
 suffix = raw_input("Please enter extension of files you want to copy:  ")
+rename_level = int(raw_input("Please enter directory depth to be used for file naming:  "))
+
 
 for root, dirs, files in os.walk(directory):
         for file in files:
