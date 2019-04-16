@@ -8,7 +8,7 @@ from PIL import Image
 
 
 stackName = 'nReconStack'
-dataset='CytoK'
+dataset = raw_input("Please enter _suffix of nRecon bmp file directories you want to turn to HDF5s in dir name format nRecon_xxxxx:  ")
 
 def nReconBmpSequence_to_Hdf5(dataPath, fileNamePrefix):
     """
