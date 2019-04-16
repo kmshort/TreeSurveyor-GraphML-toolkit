@@ -94,22 +94,26 @@ def getAllCoordinates(nxTreeSurveyorGraph):
 
     return coordinateArray
 
-def getKidneyHullVolume(nxTreeSurveyorGraph):
+def getKidneyHullVolume(nxTreeSurveyorGraph, resolution = 1.0):
     ''' Gets the convex hull volume of all the points in the tree surveyor graphML file, using a convex Hull approach.
     WARNING, this is based on a 1x1x1 grid... it DOES NOT account for voxel-to-real world size.
     Check your pixel size. Could be 3.21 or otherwise.. so final actual volume would be volume*3.21*3.21*3.21 (um^3)
     This routine DOES NOT calculate that'''
+    resolution = float(resolution)
     allCoordinates = getAllCoordinates(nxTreeSurveyorGraph)
     volume = ConvexHull(allCoordinates).volume
-    return volume
+    correctedVolume = float(volume) * float(resolution)**3.0
+    return correctedVolume
     
-def getKidneyHullSurfaceArea(nxTreeSurveyorGraph):
+def getKidneyHullSurfaceArea(nxTreeSurveyorGraph, resolution = 1.0):
     ''' Gets the surface area of all the points in the tree surveyor graphML file, using a convex Hull approach.
     WARNING, this is based on a 1x1x1 grid... it DOES NOT account for voxel-to-real world size.
     Check your pixel size. Could be 3.21... therefore area needs to be area*3.21*3.21, and volume*3.21*3.21*3.21 (um^3)'''
+    resolution = float(resolution)
     allCoordinates = getAllCoordinates(nxTreeSurveyorGraph)
     area = ConvexHull(allCoordinates).area
-    return area
+    correctedArea = float(area) * float(resolution)**2.0
+    return correctedArea
 
 def plotKidneyHull(nxTreeSurveyorGraph):
     verts = getAllCoordinates(nxTreeSurveyorGraph)
