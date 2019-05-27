@@ -1325,9 +1325,13 @@ def export_array_32bit_byte_raw(numpy_array,filename):
 def loadRaw8bitVolume(rawVolumeFile,nxTreeSurveyorGraph):
     raw = np.fromfile(rawVolumeFile, dtype=np.uint8)
     raw = np.delete(raw, [0,1,2,3,4,5,6,7,8,9,10,11], axis=0)
-    
     dimensions = getVolumeDimensions(nxTreeSurveyorGraph)
-    rawArray3d = raw.reshape(dimensions[2], dimensions[1], dimensions[0])
+    try:
+        rawArray3d = raw.reshape(dimensions[2], dimensions[1], dimensions[0])
+    except:
+        print("Couldn't turn the raw input volume into a 3D volume, are you sure this is an 8-bit grayscale volume?")
+        print("debug: loadRaw8bitVolume(rawVolumeFile,nxTreeSurveyorGraph)")
+        sys.exit()
     rawArray3d_rotated = np.swapaxes(rawArray3d,0,2)
     
     return rawArray3d_rotated
@@ -1381,7 +1385,13 @@ def convert1dRGBto3D(rawR, rawG, rawB, nxTreeSurveyorGraph):
     
     dimensions = getVolumeDimensions(nxTreeSurveyorGraph)
     
-    redArray3d = rawR.reshape(dimensions[2], dimensions[1], dimensions[0])
+    
+    try:
+        redArray3d = rawR.reshape(dimensions[2], dimensions[1], dimensions[0])
+    except:
+        print("Couldn't turn the raw RGB input volume into a 3D volume, are you sure this is an RGB volume from TS or imagej?\nIf you're sure it is, check which program it has come from and use the correct input switch.\nSee Help for more details.")
+        print("debug: convert1dRGBto3D(rawR, rawG, rawB, nxTreeSurveyorGraph)")
+        sys.exit()
     greenArray3d = rawG.reshape(dimensions[2], dimensions[1], dimensions[0])
     blueArray3d = rawB.reshape(dimensions[2], dimensions[1], dimensions[0])
     
