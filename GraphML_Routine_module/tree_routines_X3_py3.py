@@ -58,6 +58,8 @@ def getBranchKeyInfo(nxTreeSurveyorGraph, TreeSurveyorBranchID):
     
 def getTipIDs(nxTreeSurveyorGraph):
     # supply a networkX graph (from networkX library) from TreeSurveyor, will return a list of all branch IDs that are TIPS.
+    # Tree Surveyor projects the spline beyond every tip. These are listed as "extension of" in the graphml. Therefore
+    # we can look for these tags, because they will all be tips.
     tips = []
     for l in nxTreeSurveyorGraph.nodes:
         if "Extension Of " in l:
@@ -326,31 +328,82 @@ def findMiddle(input_list):
         #just grab whatever's close to the middle
         return input_list[int(middle)]
     
-def getBranchNeighbourID(nxTreeSurveyorGraph, TreeSurveyorBranchID):
-    """ identifies neighbour BranchID(s) """
-    # get the ID of the parent first.
-    if TreeSurveyorBranchID == 'Root':
-        print('Requested node is Root, so has no neighbour')
-        exit()
-    if "Extension Of " in TreeSurveyorBranchID:
-        TreeSurveyorBranchID = TreeSurveyorBranchID[13:]
-        segment = TreeSurveyorBranchID[:-2]
-        
-    elif len(TreeSurveyorBranchID) == 1:
-        segment = 'Root'
-    else:
-        segment = TreeSurveyorBranchID[:-2]
-    
-    # grab the children of the segment
-    branches = nxTreeSurveyorGraph.adj[segment].keys()
-    # remove the original branchID
-    branches.remove(TreeSurveyorBranchID)
+#def getBranchNeighbourID(nxTreeSurveyorGraph, TreeSurveyorBranchID):
+#    """ identifies neighbour BranchID(s) """
+#    # get the ID of the parent first.
+#    if TreeSurveyorBranchID == 'Root':
+#        print('Requested node is Root, so has no neighbour')
+#        exit()
+#    if "Extension Of " in TreeSurveyorBranchID:
+#        TreeSurveyorBranchID = TreeSurveyorBranchID[13:]
+#        segment = TreeSurveyorBranchID[:-2]
+#        
+#    elif len(TreeSurveyorBranchID) == 1:
+#        segment = 'Root'
+#    else:
+#        segment = TreeSurveyorBranchID[:-2]
+#    
+#    # grab the children of the segment
+#    branches = nxTreeSurveyorGraph.adj[segment].keys()
+#    
+#    # remove the original branchID
+#    
+#    branches = list(nxTreeSurveyorGraph.adj[segment].keys())
+#    branches.remove(TreeSurveyorBranchID)
+#
+#    if len(branches) > 1:
+#        print('WARNING Flag: the getNeighbourID() function reports there are more than one sibling, in fact there are', len(branches), 'siblings. These involve', branches)
+#    # Returns a STRING, could change this to return all siblings. At the moment, i'm just going with bifurcation
+#    return branches[0]
 
-    if len(branches) > 1:
-        print('WARNING Flag: the getNeighbourID() function reports there are more than one sibling, in fact there are', len(branches), 'siblings. These involve', branches)
-    # Returns a STRING, could change this to return all siblings. At the moment, i'm just going with bifurcation
-    return branches[0]
+def getBranchNeighbourID(graph, edge_id):
+    # Find the edge with the specified ID
+    source_node = target_node = None
+    for u, v, data in graph.edges(data=True):
+        if data.get('id') == edge_id:
+            source_node = u
+            target_node = v
+            break
+    if source_node is None or target_node is None:
+        return []
+
+    # Find outgoing neighboring edges from the target node
+    outgoing_neighbors = []
+    for _, neighbor, data in graph.edges(target_node, data=True):
+        outgoing_neighbors.append(data.get('id'))
+
+    # Find incoming neighboring edges to the source node, excluding the edge itself
+    incoming_neighbors = []
+    for neighbor, _, data in graph.edges(source_node, data=True):
+        if data.get('id') != edge_id:
+            incoming_neighbors.append(data.get('id'))
+
+    return outgoing_neighbors, incoming_neighbors
+
+def find_descendant_edges(graph, edge_id):
+    # Ensure the edge ID is a string
+    if isinstance(edge_id, list):
+        edge_id = edge_id[0]  # Convert to string if it's a list with one element
     
+    # Find the edge with the specified ID
+    target_node = None
+    for u, v, data in graph.edges(data=True):
+        if data.get('id') == edge_id:
+            target_node = v
+            break
+    if target_node is None:
+        print(f"Edge with ID '{edge_id}' not found.")
+        return []
+
+    # Traverse descendants of the target node
+    descendant_edges = []
+    for descendant in nx.descendants(graph, target_node):
+        for _, neighbor, data in graph.edges(descendant, data=True):
+            descendant_edges.append(data.get('id'))
+
+    return descendant_edges
+    
+
 def getNeighbourData(nxTreeSurveyorGraph, TreeSurveyorBranchID, measure):
     neighbourID = getBranchNeighbourID(nxTreeSurveyorGraph, TreeSurveyorBranchID)
     if len(TreeSurveyorBranchID) == 1:
@@ -865,7 +918,7 @@ def calculateTransformedCoordinates(nxTreeSurveyorGraph, TreeSurveyorBranchID, n
 def centreOfArray(array):
     centerList = []
     for d in array.shape:
-        centerOfAxis = np.int(d/2.)
+        centerOfAxis = int(d/2.)
         centerList.append(centerOfAxis)
     return tuple(centerList)
    
@@ -1104,7 +1157,7 @@ def segmentArray(array, colourSampleCoordinates):
     #initialise an emptpy array of zeroes that are the same dimensions as the source volume
     dimensions = [array.shape[0],array.shape[1],array.shape[2]]
     
-    eightbitArray = np.zeros((dimensions[0],dimensions[1],dimensions[2]), dtype=np.int)
+    eightbitArray = np.zeros((dimensions[0],dimensions[1],dimensions[2]), dtype=int)
 
     #identify the HSV value at the colourSampleCoordinates provided
     hsvAtPoint = array[colourSampleCoordinates[0],colourSampleCoordinates[1],colourSampleCoordinates[2]]
